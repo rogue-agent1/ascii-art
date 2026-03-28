@@ -1,6 +1,6 @@
-# ascii-art
+# ascii_art
 
-Convert text to large ASCII art banners using built-in font
+ASCII art generator — convert text to various art styles
 
 ## Usage
 
@@ -8,4 +8,6 @@ Convert text to large ASCII art banners using built-in font
 python3 ascii_art.py --help
 ```
 
-Zero dependencies. Python 3.8+.
+## License
+
+MIT
