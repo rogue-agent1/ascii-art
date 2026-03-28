@@ -1,29 +1,51 @@
 #!/usr/bin/env python3
-"""ASCII art — banners, borders, patterns, art text."""
-import sys
-def banner(text, char="#"):
-    w=len(text)+4
-    print(char*w); print(f"{char} {text} {char}"); print(char*w)
-def bubble(text):
-    w=len(text)+2
-    print(f" {'_'*w}"); print(f"( {text} )"); print(f" {'‾'*w}")
-def cowsay(text):
-    w=len(text)+2
-    print(f" {'_'*w}"); print(f"< {text} >"); print(f" {'‾'*w}")
-    print("        \   ^__^"); print("         \  (oo)\_______")
-    print("            (__)\       )\/\"); print("                ||----w |"); print("                ||     ||")
-def wave(text):
-    import math
-    for i,c in enumerate(text):
-        offset=int(math.sin(i*0.5)*3)+4
-        print(" "*offset+c)
-def matrix(w=60,h=15):
-    import random
-    chars="ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ012345789:.<>"
-    for _ in range(h):
-        print("".join(random.choice(chars) if random.random()<0.3 else " " for _ in range(w)))
-def cli():
-    if len(sys.argv)<2: print("Usage: ascii_art banner|bubble|cowsay|wave|matrix <text>"); sys.exit(1)
-    cmd=sys.argv[1]; text=" ".join(sys.argv[2:]) or "Hello World"
-    {"banner":banner,"bubble":bubble,"cowsay":cowsay,"wave":wave,"matrix":lambda t:matrix()}.get(cmd,banner)(text)
-if __name__=="__main__": cli()
+"""ascii_art - Convert images (PPM) to ASCII art."""
+import argparse, sys
+
+CHARS = " .:-=+*#%@"
+
+def read_ppm(path):
+    with open(path, 'rb') as f:
+        magic = f.readline().strip()
+        line = f.readline().strip()
+        while line.startswith(b'#'): line = f.readline().strip()
+        w, h = map(int, line.split())
+        maxval = int(f.readline().strip())
+        data = f.read()
+    return w, h, data
+
+def to_ascii(w, h, data, out_width=80):
+    scale = w / out_width
+    out_height = int(h / scale / 2)
+    lines = []
+    for y in range(out_height):
+        line = ""
+        for x in range(out_width):
+            px, py = int(x * scale), int(y * scale * 2)
+            if py >= h or px >= w: line += " "; continue
+            i = (py * w + px) * 3
+            if i + 2 < len(data):
+                brightness = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000
+                idx = int(brightness / 256 * len(CHARS))
+                line += CHARS[min(idx, len(CHARS) - 1)]
+            else:
+                line += " "
+        lines.append(line.rstrip())
+    return "\n".join(lines)
+
+def main():
+    p = argparse.ArgumentParser(description="Image to ASCII art")
+    p.add_argument("input", help="PPM image")
+    p.add_argument("-w", "--width", type=int, default=80)
+    p.add_argument("-i", "--invert", action="store_true")
+    p.add_argument("-o", "--output")
+    args = p.parse_args()
+    w, h, data = read_ppm(args.input)
+    if args.invert:
+        global CHARS; CHARS = CHARS[::-1]
+    art = to_ascii(w, h, data, args.width)
+    if args.output: open(args.output, 'w').write(art); print(f"Saved to {args.output}")
+    else: print(art)
+
+if __name__ == "__main__":
+    main()

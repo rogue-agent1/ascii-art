@@ -1,13 +1,11 @@
-# ascii_art
+# ascii-art
 
-ASCII art generator — convert text to various art styles
+Image to ASCII art converter.
+
+Zero dependencies. Python 3.8+.
 
 ## Usage
 
 ```bash
 python3 ascii_art.py --help
 ```
-
-## License
-
-MIT
