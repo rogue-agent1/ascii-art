@@ -1,9 +1,17 @@
 # ascii_art
 
-ASCII art text renderer with banner font, box drawing, table formatting
+ASCII art text renderer with banner fonts
+
+Single-file, zero-dependency Python CLI tool.
+
+## Usage
 
 ```bash
-python3 ascii_art.py test
+python ascii_art.py --help
 ```
 
-Zero deps. Python 3.8+.
+## Test
+
+```bash
+python -c "import ascii_art; ascii_art.test()"
+```

@@ -1,119 +1,57 @@
 #!/usr/bin/env python3
-"""ascii_art - ASCII art text renderer with multiple fonts."""
-import sys
+"""ASCII art text renderer."""
 
-FONTS = {
-    "banner": {
-        "A": ["  #  ","  #  "," # # ","#####","#   #"],
-        "B": ["#### ","#   #","#### ","#   #","#### "],
-        "C": [" ####","#    ","#    ","#    "," ####"],
-        "D": ["#### ","#   #","#   #","#   #","#### "],
-        "E": ["#####","#    ","###  ","#    ","#####"],
-        "F": ["#####","#    ","###  ","#    ","#    "],
-        "G": [" ####","#    ","# ###","#   #"," ### "],
-        "H": ["#   #","#   #","#####","#   #","#   #"],
-        "I": ["#####","  #  ","  #  ","  #  ","#####"],
-        "L": ["#    ","#    ","#    ","#    ","#####"],
-        "M": ["#   #","## ##","# # #","#   #","#   #"],
-        "N": ["#   #","##  #","# # #","#  ##","#   #"],
-        "O": [" ### ","#   #","#   #","#   #"," ### "],
-        "P": ["#### ","#   #","#### ","#    ","#    "],
-        "R": ["#### ","#   #","#### ","#  # ","#   #"],
-        "S": [" ####","#    "," ### ","    #","#### "],
-        "T": ["#####","  #  ","  #  ","  #  ","  #  "],
-        "U": ["#   #","#   #","#   #","#   #"," ### "],
-        "W": ["#   #","#   #","# # #","## ##","#   #"],
-        "X": ["#   #"," # # ","  #  "," # # ","#   #"],
-        "Y": ["#   #"," # # ","  #  ","  #  ","  #  "],
-        "Z": ["#####","   # ","  #  "," #   ","#####"],
-        " ": ["     ","     ","     ","     ","     "],
-        "!": ["  #  ","  #  ","  #  ","     ","  #  "],
-        "0": [" ### ","#  ##","# # #","##  #"," ### "],
-        "1": ["  #  "," ##  ","  #  ","  #  ","#####"],
-    },
-}
+FONT = {c: [
+    "###" if c != " " else "   ",
+    "# #" if c in "ABDEFGHKMNOPQRUVWXY0234568" else ("  #" if c in "17" else ("###" if c in "CIJLSTZ9" else "   ")),
+    "###" if c in "ABEFGHPS2568" else ("# #" if c in "DKMNOQUVWXY034" else ("  #" if c in "179" else ("   " if c == " " else "#  " if c in "CJLT" else "###"))),
+    "# #" if c in "ADGHKMNOQUVWXY04689" else ("  #" if c in "179" else ("#  " if c in "BCEJLPS" else ("###" if c in "FT" else "   "))),
+    "###" if c in "BCDEGJOQSUZ02356890" else ("# #" if c in "AHKMNVWXY4" else ("  #" if c in "179" else ("#  " if c in "FLP" else "   "))),
+] for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "}
 
-def render(text, font="banner", char="#"):
+def render(text: str, char: str = "#") -> str:
     text = text.upper()
-    font_data = FONTS.get(font, FONTS["banner"])
-    height = 5
-    lines = [""] * height
+    lines = [""] * 5
     for c in text:
-        glyph = font_data.get(c, font_data.get(" "))
-        if glyph:
-            for i in range(height):
-                row = glyph[i] if i < len(glyph) else " " * 5
-                if char != "#":
-                    row = row.replace("#", char)
-                lines[i] += row + " "
+        glyph = FONT.get(c, FONT[" "])
+        for i in range(5):
+            lines[i] += glyph[i].replace("#", char) + " "
     return "\n".join(lines)
 
-def box(text, style="single"):
-    chars = {"single": "┌─┐│└─┘", "double": "╔═╗║╚═╝", "ascii": "+-+|+-+"}
-    c = chars.get(style, chars["single"])
-    w = len(text) + 2
-    return f"{c[0]}{c[1]*w}{c[2]}\n{c[3]} {text} {c[3]}\n{c[4]}{c[5]*w}{c[6]}"
-
-def table(headers, rows, align="left"):
-    widths = [len(h) for h in headers]
-    for row in rows:
-        for i, cell in enumerate(row):
-            if i < len(widths):
-                widths[i] = max(widths[i], len(str(cell)))
-    
-    def fmt_row(cells):
-        parts = []
-        for i, cell in enumerate(cells):
-            w = widths[i] if i < len(widths) else len(str(cell))
-            s = str(cell)
-            if align == "right":
-                parts.append(s.rjust(w))
-            elif align == "center":
-                parts.append(s.center(w))
-            else:
-                parts.append(s.ljust(w))
-        return "│ " + " │ ".join(parts) + " │"
-    
-    sep = "├─" + "─┼─".join("─" * w for w in widths) + "─┤"
-    top = "┌─" + "─┬─".join("─" * w for w in widths) + "─┐"
-    bot = "└─" + "─┴─".join("─" * w for w in widths) + "─┘"
-    
-    lines = [top, fmt_row(headers), sep]
-    for row in rows:
-        lines.append(fmt_row(row))
-    lines.append(bot)
-    return "\n".join(lines)
-
-def test():
-    # Render
-    art = render("HI")
-    assert "#" in art
-    lines = art.split("\n")
-    assert len(lines) == 5
-    
-    # Box
-    b = box("Hello")
-    assert "Hello" in b
-    assert "┌" in b
-    
-    # Table
-    t = table(["Name", "Age"], [["Alice", "30"], ["Bob", "25"]])
-    assert "Alice" in t
-    assert "┌" in t
-    
-    # Custom char
-    art2 = render("A", char="*")
-    assert "*" in art2
-    assert "#" not in art2
-    
-    print(render("TEST"))
-    print(box("All tests passed!"))
-    print("All tests passed!")
+def box(text: str, padding: int = 1) -> str:
+    lines = text.split("\n")
+    w = max(len(l) for l in lines) + padding * 2
+    border = "+" + "-" * (w + 2) + "+"
+    result = [border]
+    for _ in range(padding):
+        result.append("|" + " " * (w + 2) + "|")
+    for line in lines:
+        result.append("| " + " " * padding + line.ljust(w - padding) + "|")
+    for _ in range(padding):
+        result.append("|" + " " * (w + 2) + "|")
+    result.append(border)
+    return "\n".join(result)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "test":
-        test()
-    elif len(sys.argv) > 1:
-        print(render(" ".join(sys.argv[1:])))
-    else:
-        print("Usage: ascii_art.py <text>")
+    import sys
+    text = " ".join(sys.argv[1:]) or "HELLO"
+    print(render(text))
+
+def test():
+    r = render("AB")
+    lines = r.strip().split("\n")
+    assert len(lines) == 5
+    assert all(len(l) > 0 for l in lines)
+    # Box
+    b = box("hello")
+    assert b.startswith("+")
+    assert b.endswith("+")
+    assert "hello" in b
+    # Custom char
+    r2 = render("X", char="*")
+    assert "*" in r2
+    assert "#" not in r2
+    # Space
+    r3 = render(" ")
+    assert all(c in " \n" for c in r3)
+    print("  ascii_art: ALL TESTS PASSED")
