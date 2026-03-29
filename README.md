@@ -1,8 +1,6 @@
-# ascii-art
+# ascii-art-gen
 
-Image to ASCII art converter.
-
-Zero dependencies. Python 3.8+.
+ASCII art text banner generator. Zero-dependency, single-file Python CLI.
 
 ## Usage
 
