@@ -1,9 +1,9 @@
-# ascii-art-gen
+# ascii_art
 
-ASCII art text banner generator. Zero-dependency, single-file Python CLI.
-
-## Usage
+ASCII art text renderer with banner font, box drawing, table formatting
 
 ```bash
-python3 ascii_art.py --help
+python3 ascii_art.py test
 ```
+
+Zero deps. Python 3.8+.
